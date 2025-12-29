@@ -1,6 +1,10 @@
 # CAFM
 
+<<<<<<< HEAD
 Research codebase for time-series forecasting. The core model is in `models/My_Model.py`, supporting LLM backbones (Qwen2.5/Qwen3) or a pure Transformer encoder, with optional text-summary features for training and inference.
+=======
+Research codebase for time-series forecasting/classification. The core model is in `models/My_Model.py`, supporting LLM backbones (Qwen2.5/Qwen3) or a pure Transformer encoder, with optional text-summary features for training and inference.
+>>>>>>> 3baf258 (init commit)
 
 ## Requirements
 
@@ -94,4 +98,7 @@ The model supports a `pretrain` task (`Model.forward` includes a `pretrain` bran
 - `--text`: enable text features (1 to enable)
 
 For multi-GPU training, launch with `torchrun` and set `LOCAL_RANK/RANK/WORLD_SIZE`; the script will auto-enable DDP.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3baf258 (init commit)
