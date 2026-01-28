@@ -8,7 +8,7 @@ import torch.nn.functional as F
 plt.switch_backend('agg')
 
 def adjust_learning_rate(optimizer, scheduler, epoch, args, printout=True):
-    # lr = args.learning_rate * (0.2 ** (epoch // 2))
+    
     if args.lradj == 'type1':
         lr_adjust = {epoch: args.learning_rate * (0.5 ** ((epoch - 1) // 1))}
     elif args.lradj == 'type2':
@@ -79,7 +79,7 @@ class EarlyStopping:
 
 
 class dotdict(dict):
-    """dot.notation access to dictionary attributes"""
+    
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
@@ -98,9 +98,7 @@ class StandardScaler():
 
 
 def visual(true, preds=None, name='./pic/test.pdf'):
-    """
-    Results visualization
-    """
+    
     plt.figure(figsize=(16, 4))
     plt.plot(true, label='GroundTruth', linewidth=2)
     if preds is not None:
@@ -138,62 +136,51 @@ def cal_accuracy(y_pred, y_true):
 
 
 def compare_tensors(tensor1, tensor2):
-    """
-    Compares two PyTorch tensors element-wise and returns a tensor with 1 where tensor1 is greater than or
-    equal to tensor2, and 0 where tensor1 is less than tensor2.
-
-    Args:
-        tensor1 (torch.Tensor): A PyTorch tensor.
-        tensor2 (torch.Tensor): A PyTorch tensor with the same shape as tensor1.
-
-    Returns:
-        A PyTorch tensor with the same shape as tensor1, containing 1s where tensor1 is greater than or equal to
-        tensor2, and 0s where tensor1 is less than tensor2.
-    """
-    # Use PyTorch's element-wise comparison function to create a tensor of 1s and 0s
+    
+    
     comparison = torch.ge(tensor1, tensor2)
 
-    # Convert the boolean tensor to a tensor of 1s and 0s
+    
     result = comparison.int()
 
     return result.type_as(torch.LongTensor())
 
-# def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
-#     new_state_dict = torch.load(weights_path,  map_location=device)['model_state_dict']
 
-#     matched_layers = 0
-#     unmatched_layers = []
-#     cnt=0
-#     total_layers=0
-#     for name, param in model.state_dict().items():
-#         total_layers+=1
-#         if exclude_head and 'head' in name: continue
-#         if name in new_state_dict:
-#             matched_layers += 1
-#             input_param = new_state_dict[name]
-#             if input_param.shape == param.shape:
-#                 param.copy_(input_param)
-#                 cnt+=1
-#             else:
-#                 unmatched_layers.append(name)
-#         else:
-#             unmatched_layers.append(name)
-#             pass # these are weights that weren't in the original model, such as a new head
-#     if matched_layers == 0:
-#         raise Exception("No shared weight names were found between the models")
-#     else:
-#         if len(unmatched_layers) > 0:
-#             print(f'check unmatched_layers: {unmatched_layers}')
-#         else:
-#             print(f"weights from {weights_path} successfully transferred!\n")
-#     # 输出统计结果
-#     print(f"\n===== 权重加载统计 =====")
-#     print(f"成功匹配参数层数: {cnt}/{total_layers}")
-#     model = model.to(device)
-#     return model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
-    # 始终在 CPU 读取
+    
     new_state_dict = torch.load(weights_path, map_location='cpu')['model_state_dict']
 
     matched_layers = 0
@@ -201,7 +188,7 @@ def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
     cnt = 0
     total_layers = 0
 
-    # 直接拿模型当前 state_dict（CPU）进行拷贝
+    
     model_state = model.state_dict()
 
     for name, param in model_state.items():
@@ -212,14 +199,14 @@ def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
             matched_layers += 1
             input_param = new_state_dict[name]
             if input_param.shape == param.shape:
-                # param 是一个 Tensor（非 Parameter），使用 copy_
+                
                 param.copy_(input_param)
                 cnt += 1
             else:
                 unmatched_layers.append(name)
         else:
             unmatched_layers.append(name)
-            # 这些是新层（比如 head），略过
+            
 
     if matched_layers == 0:
         raise Exception("No shared weight names were found between the models")
@@ -232,25 +219,21 @@ def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
     print(f"\n===== 权重加载统计 =====")
     print(f"成功匹配参数层数: {cnt}/{total_layers}")
 
-    # **不要在这里 model.to(device)**，让外层统一搬到 cuda:{LOCAL_RANK}
+    
     return model
 
 
 def print_module_parameters(model, name="Model"):
-    """
-    打印模型或模块的参数信息
-    :param model: 要分析的模型或模块
-    :param name: 模块名称，用于打印输出
-    """
+    
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"{name} Total params: {total_params}")
     print(f"{name} Trainable params: {trainable_params}")
     print(f"{name} Non-trainable params: {total_params - trainable_params}\n")
 
-    # 如果需要更详细的模块级别参数统计，可以进一步遍历子模块
+    
     for module_name, module in model.named_modules():
-        if isinstance(module, nn.Module) and module_name:  # 忽略顶层模块
+        if isinstance(module, nn.Module) and module_name:  
             total_params = sum(p.numel() for p in module.parameters())
             trainable_params = sum(p.numel() for p in module.parameters() if p.requires_grad)
             print(f"Module {module_name} Total params: {total_params}")
@@ -351,21 +334,21 @@ class ContrastiveWeight(nn.Module):
     def forward(self, batch_emb_om):
         cur_batch_shape = batch_emb_om.shape
 
-        # get similarity matrix among mask samples
+        
         norm_emb = F.normalize(batch_emb_om, dim=1)
         similarity_matrix = torch.matmul(norm_emb, norm_emb.transpose(0, 1))
 
-        # get positives and negatives similarity
+        
         positives_mask, negatives_mask = self.get_positive_and_negative_mask(similarity_matrix, cur_batch_shape[0])
 
         positives = similarity_matrix[positives_mask].view(cur_batch_shape[0], -1)
         negatives = similarity_matrix[negatives_mask].view(cur_batch_shape[0], -1)
 
-        # generate predict and target probability distributions matrix
+        
         logits = torch.cat((positives, negatives), dim=-1)
         y_true = torch.cat((torch.ones(cur_batch_shape[0], positives.shape[-1]), torch.zeros(cur_batch_shape[0], negatives.shape[-1])), dim=-1).to(batch_emb_om.device).float()
 
-        # multiple positives - KL divergence
+        
         predict = self.log_softmax(logits / self.temperature)
         loss = self.kl(predict, y_true)
 
@@ -385,7 +368,7 @@ class AggregationRebuild(torch.nn.Module):
 
         cur_batch_shape = batch_emb_om.shape
 
-        # get the weight among (oral, oral's masks, others, others' masks)
+        
         similarity_matrix /= self.temperature
 
         similarity_matrix = similarity_matrix - torch.eye(cur_batch_shape[0]).to(similarity_matrix.device).float() * 1e12
@@ -393,10 +376,10 @@ class AggregationRebuild(torch.nn.Module):
 
         batch_emb_om = batch_emb_om.reshape(cur_batch_shape[0], -1)
 
-        # generate the rebuilt batch embedding (oral, others, oral's masks, others' masks)
+        
         rebuild_batch_emb = torch.matmul(rebuild_weight_matrix, batch_emb_om)
 
-        # get oral' rebuilt batch embedding
+        
         rebuild_oral_batch_emb = rebuild_batch_emb.reshape(cur_batch_shape[0], cur_batch_shape[1], -1)
 
         return rebuild_weight_matrix, rebuild_oral_batch_emb

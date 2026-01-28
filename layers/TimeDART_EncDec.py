@@ -11,10 +11,7 @@ class ChannelIndependence(nn.Module):
         super(ChannelIndependence, self).__init__()
 
     def forward(self, x):
-        """
-        :param x: [batch_size, input_len, num_features]
-        :return: [batch_size * num_features, input_len, 1]
-        """
+        
         _, input_len, _ = x.shape
         x = x.permute(0, 2, 1)
         x = x.reshape(-1, input_len, 1)
@@ -28,17 +25,14 @@ class AddSosTokenAndDropLast(nn.Module):
         self.sos_token = sos_token
 
     def forward(self, x):
-        """
-        :param x: [batch_size * num_features, seq_len, d_model]
-        :return: [batch_size * num_features, seq_len, d_model]
-        """
+        
         sos_token_expanded = self.sos_token.expand(
             x.size(0), -1, -1
-        )  # [batch_size * num_features, 1, d_model]
+        )  
         x = torch.cat(
             [sos_token_expanded, x], dim=1
-        )  # [batch_size * num_features, seq_len + 1, d_model]
-        x = x[:, :-1, :]  # [batch_size * num_features, seq_len, d_model]
+        )  
+        x = x[:, :-1, :]  
         return x
 
 
@@ -59,26 +53,22 @@ class TransformerEncoderBlock(nn.Module):
             nn.Linear(feedforward_dim, d_model),
         )
 
-        #下面的三行是作为上面ffn的备选，未用到
+        
         self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=feedforward_dim, kernel_size=1)
         self.activation = nn.GELU()
         self.conv2 = nn.Conv1d(in_channels=feedforward_dim, out_channels=d_model, kernel_size=1)
         self.norm2 = nn.LayerNorm(d_model)
-        #下面的三行是作为上面ffn的备选，未用到
+        
         
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, mask):
-        """
-        :param x: [batch_size * num_features, seq_len, d_model]
-        :param mask: [1, 1, seq_len, seq_len]
-        :return: [batch_size * num_features, seq_len, d_model]
-        """
-        # Self-attention
+        
+        
         attn_output, _ = self.attention(x, x, x, attn_mask=mask)
         x = self.norm1(x + self.dropout(attn_output))
 
-        # Feed-forward network
+        
         ff_output = self.ff(x)
         output = self.norm2(x + self.dropout(ff_output))
 
@@ -105,7 +95,7 @@ class CausalTransformer(nn.Module):
         self.norm = nn.LayerNorm(d_model)
 
     def forward(self, x, is_mask=True):
-        # x: [batch_size * num_features, seq_len, d_model]
+        
         seq_len = x.size(1)
         mask = generate_causal_mask(seq_len).to(x.device) if is_mask else None
         for layer in self.layers:
@@ -115,62 +105,62 @@ class CausalTransformer(nn.Module):
         return x
 
 
-# class Diffusion(nn.Module):
-#     def __init__(
-#         self,
-#         time_steps: int,
-#         device: torch.device,
-#         scheduler: str = "cosine",
-#     ):
-#         super(Diffusion, self).__init__()
-#         self.device = device
-#         self.time_steps = time_steps
 
-#         if scheduler == "cosine":
-#             self.betas = self._cosine_beta_schedule().to(self.device)
-#         elif scheduler == "linear":
-#             self.betas = self._linear_beta_schedule().to(self.device)
-#         else:
-#             raise ValueError(f"Invalid scheduler: {scheduler=}")
 
-#         self.alpha = 1 - self.betas
-#         self.gamma = torch.cumprod(self.alpha, dim=0).to(self.device)
 
-#     def _cosine_beta_schedule(self, s=0.008):
-#         steps = self.time_steps + 1
-#         x = torch.linspace(0, self.time_steps, steps)
-#         alphas_cumprod = (
-#             torch.cos(((x / self.time_steps) + s) / (1 + s) * torch.pi * 0.5) ** 2
-#         )
-#         alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
-#         betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
-#         return torch.clip(betas, 0, 0.999)
 
-#     def _linear_beta_schedule(self, beta_start=1e-4, beta_end=0.02):
-#         betas = torch.linspace(beta_start, beta_end, self.time_steps)
-#         return betas
 
-#     def sample_time_steps(self, shape):
-#         return torch.randint(0, self.time_steps, shape, device=self.device)
 
-#     def noise(self, x, t):
-#         noise = torch.randn_like(x)
-#         gamma_t = self.gamma[t].unsqueeze(-1)  # [batch_size * num_features, seq_len, 1]
-#         # x_t = sqrt(gamma_t) * x + sqrt(1 - gamma_t) * noise
-#         noisy_x = torch.sqrt(gamma_t) * x + torch.sqrt(1 - gamma_t) * noise
-#         return noisy_x, noise
 
-#     def forward(self, x):
-#         # x: [batch_size * num_features, seq_len, patch_len]
-#         # t = self.sample_time_steps(x.shape[:2])  # [batch_size * num_features, seq_len]
 
-#         # —— 全局统一时间步：为整个 batch 采一个标量 t_g，并广播到 [BF, S] —— #
-#         BF, S, _ = x.shape
-#         t_g = torch.randint(0, self.time_steps, (1,), device=self.device)  # [1]
-#         t   = t_g.expand(BF, S)   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
-#         noisy_x, noise = self.noise(x, t)
-#         return noisy_x, noise, t
+
+
 
 
 class Diffusion(nn.Module):
@@ -178,7 +168,7 @@ class Diffusion(nn.Module):
         super().__init__()
         self.time_steps = int(time_steps)
 
-        # 在 CPU 上构造常量并注册为 buffer（不会参与梯度）
+        
         if scheduler == "cosine":
             betas = self._cosine_beta_schedule()
         elif scheduler == "linear":
@@ -189,15 +179,15 @@ class Diffusion(nn.Module):
         alpha = 1.0 - betas
         gamma = torch.cumprod(alpha, dim=0)
 
-        # 注册为 buffer，这样 model.to(device) / DDP 会自动搬运到各自设备
-        self.register_buffer("betas", betas)   # [T]
-        self.register_buffer("alpha", alpha)   # [T]
-        self.register_buffer("gamma", gamma)   # [T]
+        
+        self.register_buffer("betas", betas)   
+        self.register_buffer("alpha", alpha)   
+        self.register_buffer("gamma", gamma)   
 
     @torch.no_grad()
     def _cosine_beta_schedule(self, s: float = 0.008) -> torch.Tensor:
         steps = self.time_steps + 1
-        x = torch.linspace(0, self.time_steps, steps)  # CPU 即可
+        x = torch.linspace(0, self.time_steps, steps)  
         alphas_cumprod = torch.cos(((x / self.time_steps) + s) / (1 + s) * torch.pi * 0.5) ** 2
         alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
         betas = 1.0 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
@@ -209,30 +199,24 @@ class Diffusion(nn.Module):
 
     @torch.no_grad()
     def sample_time_steps(self, shape, device) -> torch.Tensor:
-        # 由调用方或 x.device 提供设备；不要用 self.device
+        
         return torch.randint(0, self.time_steps, shape, device=device)
 
     def noise(self, x: torch.Tensor, t: torch.Tensor):
-        """
-        x: [BF, S, P]; t: [BF, S] (long)
-        返回 noisy_x, noise；都与 x 同 dtype/device
-        """
+        
         noise = torch.randn_like(x)
-        # gamma[t]: [BF,S]；对齐 dtype 防止 AMP 下精度不一致
-        gamma_t = self.gamma[t].to(dtype=x.dtype)              # [BF, S]
-        gamma_t = gamma_t.unsqueeze(-1)                        # [BF, S, 1]
+        
+        gamma_t = self.gamma[t].to(dtype=x.dtype)              
+        gamma_t = gamma_t.unsqueeze(-1)                        
         noisy_x = torch.sqrt(gamma_t) * x + torch.sqrt(1.0 - gamma_t) * noise
         return noisy_x, noise
 
     def forward(self, x: torch.Tensor):
-        """
-        x: [BF, S, P]
-        这里示例用“全局统一时间步”（同你原来的做法），也可以改为逐 token 采样。
-        """
+        
         BF, S, _ = x.shape
-        # 关键：对齐到 x.device
-        t_g = torch.randint(0, self.time_steps, (1,), device=x.device)  # [1]
-        t = t_g.expand(BF, S)                                           # [BF, S]
+        
+        t_g = torch.randint(0, self.time_steps, (1,), device=x.device)  
+        t = t_g.expand(BF, S)                                           
         noisy_x, noise = self.noise(x, t)
         return noisy_x, noise, t
 
@@ -244,20 +228,17 @@ class TimeStepEmbedding(nn.Module):
         self.max_steps = 1000
 
     def forward(self, t):
-        """
-        :param t: [batch_size] or [batch_size, seq_len], dtype=torch.long
-        :return: [batch_size, seq_len, d_model] or [batch_size, d_model] if seq_len=1
-        """
+        
         if t.dim() == 1:
-            t = t.unsqueeze(1)  # [batch_size, 1]
+            t = t.unsqueeze(1)  
         device = t.device
         half_dim = self.d_model // 2
         emb = torch.log(torch.tensor(10000.0, device=device)) / (half_dim - 1)
-        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)  # [half_dim]
-        emb = t.float().unsqueeze(-1) * emb.unsqueeze(0).unsqueeze(0)  # [B, seq_len, half_dim]
-        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=-1)      # [B, seq_len, d_model]
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)  
+        emb = t.float().unsqueeze(-1) * emb.unsqueeze(0).unsqueeze(0)  
+        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=-1)      
         if emb.size(-1) < self.d_model:
-            # Pad to match d_model
+            
             pad = self.d_model - emb.size(-1)
             emb = torch.cat([emb, torch.zeros(t.size(0), t.size(1), pad, device=device)], dim=-1)
         return emb
@@ -279,10 +260,10 @@ class TransformerDecoderBlock(nn.Module):
         )
         self.norm2 = nn.LayerNorm(d_model)
 
-        # self.cross_attention = nn.MultiheadAttention(
-        #     embed_dim=d_model, num_heads=num_heads, dropout=dropout, batch_first=True
-        # )
-        # self.norm4 = nn.LayerNorm(d_model)
+        
+        
+        
+        
 
         self.ff = nn.Sequential(
             nn.Linear(d_model, feedforward_dim),
@@ -294,57 +275,51 @@ class TransformerDecoderBlock(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, query, key, value,tgt_mask, src_mask):
-        """
-        :param query: [batch_size * num_features, seq_len, d_model]
-        :param key: [batch_size * num_features, seq_len, d_model]
-        :param value: [batch_size * num_features, seq_len, d_model]
-        :param mask: [1, 1, seq_len, seq_len]
-        :return: [batch_size * num_features, seq_len, d_model]
-        """
+        
 
-        #cross-attention
-        # y_out=key
-        # residual=y_out
-        # y_out=self.norm4(y_out)
-        # attn_output, _ = self.cross_attention(y_out, value, value, attn_mask=None)
-        # y_out=residual+self.dropout(attn_output)
-        # key=y_out
+        
+        
+        
+        
+        
+        
+        
 
-        # Self-attention
+        
         residual=query
         query=self.norm1(query)
         attn_output, _ = self.self_attention(query, query, query, attn_mask=tgt_mask)
         query =residual + self.dropout(attn_output)
 
 
-        # Encoder attention
+        
         residual=query
         query=self.norm2(query)
         attn_output, _ = self.encoder_attention(query, key, key, attn_mask=src_mask)
         query = residual + self.dropout(attn_output)
 
-        # cross attention
-        # residual=query
-        # query=self.norm4(query)
-        # attn_output, _ = self.cross_attention(query, value, value, attn_mask=None)
-        # query = residual + self.dropout(attn_output)
         
-        # Feed-forward network
+        
+        
+        
+        
+        
+        
         residual=query
         query=self.norm3(query)
         ff_output = self.ff(query)
         x = residual + self.dropout(ff_output)
-        # # Self-attention
-        # attn_output, _ = self.self_attention(query, query, query, attn_mask=tgt_mask)
-        # query = self.norm1(query + self.dropout(attn_output))
+        
+        
+        
 
-        # # Encoder attention
-        # attn_output, _ = self.encoder_attention(query, key, value, attn_mask=src_mask)
-        # query = self.norm2(query + self.dropout(attn_output))
+        
+        
+        
 
-        # # Feed-forward network
-        # ff_output = self.ff(query)
-        # x = self.norm3(query + self.dropout(ff_output))
+        
+        
+        
         return x
 
 
@@ -390,14 +365,14 @@ class SamePadConv(nn.Module):
         self.receptive_field = (kernel_size - 1) * dilation + 1
         self.conv = nn.Conv1d(
             in_channels, out_channels, kernel_size,
-            padding=(self.receptive_field - 1),  # 左填充
+            padding=(self.receptive_field - 1),  
             dilation=dilation,
             groups=groups
         )
         
     def forward(self, x):
         out = self.conv(x)
-        # 裁剪掉多余的未来时间步，确保与输入长度一致
+        
         return out[:, :, :x.size(2)]
 
 
@@ -424,10 +399,10 @@ class CausalTCN(nn.Module):
         self.hidden_dims = hidden_dims
         self.depth = depth
         
-        # First linear layer to map input_dims to hidden_dims
+        
         self.input_fc = nn.Linear(input_dims, hidden_dims)
         
-        # Create a dilated causal convolutional encoder
+        
         self.feature_extractor = DilatedConvEncoder(
             hidden_dims,
             [hidden_dims] * (depth - 1) + [output_dims],
@@ -435,18 +410,18 @@ class CausalTCN(nn.Module):
         )
         
     def forward(self, x):
-        # Input x is of shape [batch_size, seq_len, input_dims]
         
-        # Flatten input (batch_size, seq_len, input_dims) -> (batch_size, seq_len, hidden_dims)
+        
+        
         x = self.input_fc(x)
         
-        # Transpose for the convolution (batch_size, seq_len, hidden_dims) -> (batch_size, hidden_dims, seq_len)
+        
         x = x.transpose(1, 2)
         
-        # Apply dilated convolutions
-        x = self.feature_extractor(x)  # [batch_size, hidden_dims, seq_len] -> [batch_size, output_dims, seq_len]
         
-        # Transpose back to [batch_size, seq_len, output_dims]
+        x = self.feature_extractor(x)  
+        
+        
         x = x.transpose(1, 2)
         
         return x
@@ -467,10 +442,7 @@ class DilatedConvEncoder(nn.Module):
         ])
         
     def forward(self, x):   
-        """
-        :param x: [batch_size, seq_len, input_dims]
-        :return: [batch_size, seq_len, output_dims]
-        """
+        
         x = x.transpose(1, 2)
         return self.net(x).transpose(1, 2)
 
@@ -525,13 +497,10 @@ class ClsFlattenHead(nn.Module):
         self.dropout = nn.Dropout(dropout)
     
     def forward(self, x):
-        """
-        :param x: [batch_size, seq_len, d_model]
-        :return: [batch_size, pred_len, num_features]
-        """
-        x = self.flatten(x)  # [batch_size, seq_len * d_model]
-        x = self.dropout(x)  # [batch_size, seq_len * d_model]
-        x = self.forecast_head(x)  # [batch_size, pred_len * num_features]
+        
+        x = self.flatten(x)  
+        x = self.dropout(x)  
+        x = self.forecast_head(x)  
         return x.reshape(x.size(0), self.pred_len, self.num_features)
 
 
@@ -548,12 +517,9 @@ class ARFlattenHead(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        :param x: [batch_size, num_features, seq_len, d_model]
-        :return: [batch_size, seq_len * patch_len, num_features]
-        """
-        x = self.forecast_head(x)  # (batch_size, num_features, seq_len, patch_len)
-        x = self.dropout(x)  # (batch_size, num_features, seq_len, patch_len)
-        x = self.flatten(x)  # (batch_size, num_features, seq_len * patch_len)
-        x = x.permute(0, 2, 1)  # (batch_size, seq_len * patch_len, num_features)
+        
+        x = self.forecast_head(x)  
+        x = self.dropout(x)  
+        x = self.flatten(x)  
+        x = x.permute(0, 2, 1)  
         return x

@@ -130,7 +130,7 @@ def data_provider(args, flag,llm_model=None, tokenizer=None):
             shuffle=shuffle_flag,
             num_workers=args.num_workers,
             drop_last=drop_last,
-            # collate_fn=lambda x: collate_fn(x, max_len=args.seq_len)
+            
         )
         return data_set, data_loader
     else:
@@ -147,8 +147,8 @@ def data_provider(args, flag,llm_model=None, tokenizer=None):
                 timeenc=timeenc,
                 freq=freq,
                 seasonal_patterns=args.seasonal_patterns,
-                llm_model=llm_model,          # 可选传入
-                tokenizer=tokenizer,          # 可选传入
+                llm_model=llm_model,          
+                tokenizer=tokenizer,          
             )
         else:
             data_set = Data(

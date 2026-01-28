@@ -7,7 +7,7 @@ from reformer_pytorch import LSHSelfAttention
 
 
 class DSAttention(nn.Module):
-    '''De-stationary Attention'''
+    
 
     def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
         super(DSAttention, self).__init__()
@@ -22,11 +22,11 @@ class DSAttention(nn.Module):
         scale = self.scale or 1. / sqrt(E)
 
         tau = 1.0 if tau is None else tau.unsqueeze(
-            1).unsqueeze(1)  # B x 1 x 1 x 1
+            1).unsqueeze(1)  
         delta = 0.0 if delta is None else delta.unsqueeze(
-            1).unsqueeze(1)  # B x 1 x 1 x S
+            1).unsqueeze(1)  
 
-        # De-stationary Attention, rescaling pre-softmax score with learned de-stationary factors
+        
         scores = torch.einsum("blhe,bshe->bhls", queries, keys) * tau + delta
 
         if self.mask_flag:
@@ -83,41 +83,41 @@ class ProbAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def _prob_QK(self, Q, K, sample_k, n_top):  # n_top: c*ln(L_q)
-        # Q [B, H, L, D]
+    def _prob_QK(self, Q, K, sample_k, n_top):  
+        
         B, H, L_K, E = K.shape
         _, _, L_Q, _ = Q.shape
 
-        # calculate the sampled Q_K
+        
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
-        # real U = U_part(factor*ln(L_k))*L_q
+        
         index_sample = torch.randint(L_K, (L_Q, sample_k))
         K_sample = K_expand[:, :, torch.arange(
             L_Q).unsqueeze(1), index_sample, :]
         Q_K_sample = torch.matmul(
             Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze()
 
-        # find the Top_k query with sparisty measurement
+        
         M = Q_K_sample.max(-1)[0] - torch.div(Q_K_sample.sum(-1), L_K)
         M_top = M.topk(n_top, sorted=False)[1]
 
-        # use the reduced Q to calculate Q_K
+        
         Q_reduce = Q[torch.arange(B)[:, None, None],
                    torch.arange(H)[None, :, None],
-                   M_top, :]  # factor*ln(L_q)
-        Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # factor*ln(L_q)*L_k
+                   M_top, :]  
+        Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  
 
         return Q_K, M_top
 
     def _get_initial_context(self, V, L_Q):
         B, H, L_V, D = V.shape
         if not self.mask_flag:
-            # V_sum = V.sum(dim=-2)
+            
             V_sum = V.mean(dim=-2)
             contex = V_sum.unsqueeze(-2).expand(B, H,
                                                 L_Q, V_sum.shape[-1]).clone()
-        else:  # use mask
-            # requires that L_Q == L_V, i.e. for self-attention only
+        else:  
+            
             assert (L_Q == L_V)
             contex = V.cumsum(dim=-2)
         return contex
@@ -129,7 +129,7 @@ class ProbAttention(nn.Module):
             attn_mask = ProbMask(B, H, L_Q, index, scores, device=V.device)
             scores.masked_fill_(attn_mask.mask, -np.inf)
 
-        attn = torch.softmax(scores, dim=-1)  # nn.Softmax(dim=-1)(scores)
+        attn = torch.softmax(scores, dim=-1)  
 
         context_in[torch.arange(B)[:, None, None],
         torch.arange(H)[None, :, None],
@@ -152,9 +152,9 @@ class ProbAttention(nn.Module):
         values = values.transpose(2, 1)
 
         U_part = self.factor * \
-                 np.ceil(np.log(L_K)).astype('int').item()  # c*ln(L_k)
+                 np.ceil(np.log(L_K)).astype('int').item()  
         u = self.factor * \
-            np.ceil(np.log(L_Q)).astype('int').item()  # c*ln(L_q)
+            np.ceil(np.log(L_Q)).astype('int').item()  
 
         U_part = U_part if U_part < L_K else L_K
         u = u if u < L_Q else L_Q
@@ -162,13 +162,13 @@ class ProbAttention(nn.Module):
         scores_top, index = self._prob_QK(
             queries, keys, sample_k=U_part, n_top=u)
 
-        # add scale factor
+        
         scale = self.scale or 1. / sqrt(D)
         if scale is not None:
             scores_top = scores_top * scale
-        # get the context
+        
         context = self._get_initial_context(values, L_Q)
-        # update the context with selected top_k queries
+        
         context, attn = self._update_context(
             context, values, scores_top, index, L_Q, attn_mask)
 
@@ -226,17 +226,17 @@ class ReformerLayer(nn.Module):
         )
 
     def fit_length(self, queries):
-        # inside reformer: assert N % (bucket_size * 2) == 0
+        
         B, N, C = queries.shape
         if N % (self.bucket_size * 2) == 0:
             return queries
         else:
-            # fill the time series
+            
             fill_len = (self.bucket_size * 2) - (N % (self.bucket_size * 2))
             return torch.cat([queries, torch.zeros([B, fill_len, C]).to(queries.device)], dim=1)
 
     def forward(self, queries, keys, values, attn_mask, tau, delta):
-        # in Reformer: defalut queries=keys
+        
         B, N, C = queries.shape
         queries = self.attn(self.fit_length(queries))[:, :N, :]
         return queries, None

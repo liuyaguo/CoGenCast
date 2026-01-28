@@ -13,7 +13,7 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-# ---------------- DDP: 初始化/清理 ----------------
+
 def ddp_setup():
     is_ddp = "LOCAL_RANK" in os.environ and "RANK" in os.environ and "WORLD_SIZE" in os.environ
     if is_ddp:
@@ -32,7 +32,7 @@ def ddp_cleanup():
     if dist.is_available() and dist.is_initialized():
         dist.destroy_process_group()
 
-def is_main_process(rank):  # 只在主进程打印/存盘
+def is_main_process(rank):  
     return rank == 0
 
 
@@ -44,7 +44,7 @@ np.random.seed(fix_seed)
 
 parser = argparse.ArgumentParser(description="TimeDART")
 
-# basic config
+
 parser.add_argument(
     "--task_name",
     type=str,
@@ -55,7 +55,7 @@ parser.add_argument(
 parser.add_argument("--downstream_task", type=str, default="forecast", help="downstream task, options:[forecasting, classification]")
 parser.add_argument("--is_training", type=int, default=1, help="status")
 
-#ddp setting
+
 parser.add_argument(
     "--is_ddp", type=bool, default=False, help="is_ddp"
 )
@@ -75,13 +75,13 @@ parser.add_argument(
 parser.add_argument(
     "--backbone", type=str, default="Qwen3-0.6B", help="backbone model name"
 )
-# data loader
+
 parser.add_argument(
     "--data", type=str, default="ETTh1", help="dataset type"
 )
 
-# -----------------------------------------------------------------------------------------------
-# 进行数据集的混合预训练
+
+
 parser.add_argument(
     "--data_list", type=str, default=None,
     help="comma-separated names of subdatasets for cross-domain (e.g. ETTh2,Exchange,Weather)"
@@ -92,14 +92,14 @@ parser.add_argument(
 parser.add_argument(
     "--crosspath", type=str, nargs='+',default="", help=""
 )
-# -----------------------------------------------------------------------------------------------
+
 
 parser.add_argument(
     "--root_path", type=str, default="./datasets", help="root path of the data file"
 )
 parser.add_argument("--data_path", type=str, default="ETTh1.csv", help="data file")
 
-parser.add_argument('--time_features', type=int, default=6)  # 根据实际需要设置，默认为 4（year/month/day/hour/）
+parser.add_argument('--time_features', type=int, default=6)  
 
 parser.add_argument(
     "--features",
@@ -156,7 +156,7 @@ parser.add_argument(
     help="number of accumulation steps",
 )
 
-# forecasting task
+
 parser.add_argument("--seq_len", type=int, default=336, help="input sequence length")
 parser.add_argument("--input_len", type=int, default=336, help="input sequence length")
 parser.add_argument("--label_len", type=int, default=0, help="start token length")
@@ -170,7 +170,7 @@ parser.add_argument(
     "--seasonal_patterns", type=str, default="Monthly", help="subset for M4"
 )
 
-# model define
+
 parser.add_argument("--top_k", type=int, default=5, help="for TimesBlock")
 parser.add_argument("--num_kernels", type=int, default=3, help="for Inception")
 parser.add_argument("--enc_in", type=int, default=7, help="encoder input size")
@@ -216,7 +216,7 @@ parser.add_argument("--pct_start", type=float, default=0.3, help="pct_start")
 parser.add_argument("--patch_len", type=int, default=12, help="path length")
 parser.add_argument("--stride", type=int, default=12, help="stride")
 
-# optimization
+
 parser.add_argument(
     "--num_workers", type=int, default=5, help="data loader num workers"
 )
@@ -239,7 +239,7 @@ parser.add_argument(
     default=False,
 )
 
-# GPU
+
 parser.add_argument("--use_gpu", type=bool, default=True, help="use gpu")
 parser.add_argument("--gpu", type=int, default=0, help="gpu")
 parser.add_argument(
@@ -249,7 +249,7 @@ parser.add_argument(
     "--devices", type=str, default="0", help="device ids of multile gpus"
 )
 
-# Pre-train
+
 parser.add_argument(
     "--time_steps", type=int, default=1000, help="time steps in diffusion"
 )
@@ -260,11 +260,11 @@ parser.add_argument(
 parser.add_argument("--lr_decay", type=float, default=0.5, help="learning rate decay")
 parser.add_argument("--mask_ratio", type=float, default=1.0, help="mask ratio")
 
-# Classification
+
 parser.add_argument("--num_classes", type=int, default=6, help="number of classes")
 
-## SimMTM 
-# Pre-train
+
+
 parser.add_argument('--lm', type=int, default=3, help='average masking length')
 parser.add_argument('--positive_nums', type=int, default=3, help='masking series numbers')
 parser.add_argument('--rbtp', type=int, default=1, help='0: rebuild the embedding of oral series; 1: rebuild oral series')
@@ -293,9 +293,9 @@ args = parser.parse_args()
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
 
-# ------------- DDP 初始化 & 设备 -------------
+
 is_ddp, device, local_rank, world_size, rank = ddp_setup()
-# 将关键信息写回 args，供下游使用（如 DataLoader 的 Sampler）
+
 args.device = device
 args.local_rank = local_rank
 args.world_size = world_size
@@ -313,7 +313,7 @@ Exp = Exp_map[args.model]
 
 
 for ii in range(args.itr):
-    # setting record of experiments
+    
     setting = "{}_{}_{}_{}_il{}_ll{}_pl{}_dm{}_df{}_nh{}_el{}_dl{}_fc{}_dp{}_hdp{}_ep{}_bs{}_lr{}_{}_{}_{}".format(
         args.task_name,
         args.model,
@@ -338,7 +338,7 @@ for ii in range(args.itr):
         args.iscross,
     )      
             
-    exp = Exp(args)  # set experiments
+    exp = Exp(args)  
 
     if args.tuning_manner == 1  :
         print(">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting))

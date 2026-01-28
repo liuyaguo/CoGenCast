@@ -13,7 +13,7 @@ class Exp_Basic(object):
         }
         self.device =args.device
         model = self._build_model().to(self.device)
-        # 多卡时封装 DDP
+        
         if getattr(args, "world_size", 1) > 1 and dist.is_initialized():
             model = DDP(
                 model,

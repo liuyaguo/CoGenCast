@@ -1,20 +1,18 @@
-# This source code is provided for the purposes of scientific reproducibility
-# under the following limited license from Element AI Inc. The code is an
-# implementation of the N-BEATS model (Oreshkin et al., N-BEATS: Neural basis
-# expansion analysis for interpretable time series forecasting,
-# https://arxiv.org/abs/1905.10437). The copyright to the source code is
-# licensed under the Creative Commons - Attribution-NonCommercial 4.0
-# International license (CC BY-NC 4.0):
-# https://creativecommons.org/licenses/by-nc/4.0/.  Any commercial use (whether
-# for the benefit of third parties or internally in production) requires an
-# explicit license. The subject-matter of the N-BEATS model and associated
-# materials are the property of Element AI Inc. and may be subject to patent
-# protection. No license to patents is granted hereunder (whether express or
-# implied). Copyright 2020 Element AI Inc. All rights reserved.
 
-"""
-M4 Summary
-"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from collections import OrderedDict
 
 import numpy as np
@@ -35,14 +33,14 @@ def mase(forecast, insample, outsample, frequency):
 
 def smape_2(forecast, target):
     denom = np.abs(target) + np.abs(forecast)
-    # divide by 1.0 instead of 0.0, in case when denom is zero the enumerator will be 0.0 anyway.
+    
     denom[denom == 0.0] = 1.0
     return 200 * np.abs(forecast - target) / denom
 
 
 def mape(forecast, target):
     denom = np.abs(target)
-    # divide by 1.0 instead of 0.0, in case when denom is zero the enumerator will be 0.0 anyway.
+    
     denom[denom == 0.0] = 1.0
     return 100 * np.abs(forecast - target) / denom
 
@@ -55,12 +53,7 @@ class M4Summary:
         self.naive_path = os.path.join(root_path, 'submission-Naive2.csv')
 
     def evaluate(self):
-        """
-        Evaluate forecasts using M4 test dataset.
-
-        :param forecast: Forecasts. Shape: timeseries, time.
-        :return: sMAPE and OWA grouped by seasonal patterns.
-        """
+        
         grouped_owa = OrderedDict()
 
         naive2_forecasts = pd.read_csv(self.naive_path).values[:, 1:].astype(np.float32)
@@ -78,7 +71,7 @@ class M4Summary:
 
             naive2_forecast = group_values(naive2_forecasts, self.test_set.groups, group_name)
             target = group_values(self.test_set.values, self.test_set.groups, group_name)
-            # all timeseries within group have same frequency
+            
             frequency = self.training_set.frequencies[self.test_set.groups == group_name][0]
             insample = group_values(self.training_set.values, self.test_set.groups, group_name)
 
@@ -111,11 +104,7 @@ class M4Summary:
             grouped_model_mases)
 
     def summarize_groups(self, scores):
-        """
-        Re-group scores respecting M4 rules.
-        :param scores: Scores per group.
-        :return: Grouped scores.
-        """
+        
         scores_summary = OrderedDict()
 
         def group_count(group_name):

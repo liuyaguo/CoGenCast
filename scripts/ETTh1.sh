@@ -1,6 +1,6 @@
 for pred_len in 12; do
     for trial in 3; do
-        # 遍历学习率
+
         for lr in  6e-5 ; do
             CUDA_VISIBLE_DEVICES=2 python -u run.py \
                 --task_name finetune \
