@@ -39,7 +39,7 @@ random.seed(fix_seed)
 torch.manual_seed(fix_seed)
 np.random.seed(fix_seed)
 
-parser = argparse.ArgumentParser(description="TimeDART")
+parser = argparse.ArgumentParser(description="My_Model")
 
 
 parser.add_argument(
@@ -61,10 +61,10 @@ parser.add_argument(
 
 
 parser.add_argument(
-    "--model_id", type=str, default="TimeDART", help="model id"
+    "--model_id", type=str, default="My_Model", help="model id"
 )
 parser.add_argument(
-    "--model", type=str, default="TimeDART", help="model name"
+    "--model", type=str, default="My_Model", help="model name"
 )
 parser.add_argument(
     "--llm_path", type=str, default="/data/ygliu/Downloads/models/test/Qwen3-0.6B", help="llm model path"
@@ -272,7 +272,7 @@ parser.add_argument('--mask_rate', type=float, default=0.5, help='mask ratio')
 parser.add_argument('--weight_decay', type=float, default=0.01, help='AdamW weight_decay')
 parser.add_argument('--warmup_ratio', type=float, default=0.1 ,help='warmup_ratio')
 
-parser.add_argument('--ispretrain', type=int, default=1, help='TimeDART or Random init')
+parser.add_argument('--ispretrain', type=int, default=1, help='My_Model or Random init')
 parser.add_argument('--tuning_manner', type=int, default=1, help='Tuning-free or Generative-Tuning')
 parser.add_argument('--iscross', type=int, default=0, help='Cross')
 parser.add_argument('--trial', type=int, default=0, help='')
@@ -351,7 +351,8 @@ for ii in range(args.itr):
             for pred in [12, 24, 36, 48]:
                 args.pred_len = pred
                 print(f"===== Running inference with pred_len={pred} =====")
-                exp.test()
+                for _ in range(5):
+                    exp.test()
 
     torch.cuda.empty_cache()
 
