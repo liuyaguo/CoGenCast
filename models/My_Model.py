@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, Qwen3Model, AutoConfig
 
 import torch.nn.functional as Func
 
-from layers.TimeDART_EncDec import (
+from layers.My_EncDec import (
     ChannelIndependence,
     AddSosTokenAndDropLast,
     CausalTransformer,
