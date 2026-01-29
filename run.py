@@ -67,7 +67,7 @@ parser.add_argument(
     "--model", type=str, default="My_Model", help="model name"
 )
 parser.add_argument(
-    "--llm_path", type=str, default="/data/ygliu/Downloads/models/test/Qwen3-0.6B", help="llm model path"
+    "--llm_path", type=str, default="/data/Downloads/models/test/Qwen3-0.6B", help="llm model path"
 )
 parser.add_argument(
     "--backbone", type=str, default="Qwen3-0.6B", help="backbone model name"

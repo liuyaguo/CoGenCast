@@ -1,7 +1,7 @@
-# CoGenCast
+# CoGenCast: A Coupled Autoregressive–Flow Generative Framework for Time Series Forecasting
 
 
-Research codebase for time-series forecasting. The core model is in `models/My_Model.py`, supporting LLM backbones Qwen3  for training and inference.
+The core model is in `models/My_Model.py`, supporting LLM backbones Qwen3  for training and inference.
 
 
 
@@ -22,19 +22,19 @@ Note: the code uses `transformers` (`AutoTokenizer`/`Qwen3Model`) and expects a 
 
 ## Data
 
-Default data root is `./datasets` (set by `--root_path`), and the file name is set by `--data_path`.
+Default data root is `./datasets` (set by `--root_path`).
 
-For text-enhanced datasets , the CSV should contain at least:
+For all datasets , the CSV should contain at least:
 
 - `date` (timestamp)
 - feature columns (multivariate) or the target column (univariate)
-- `json_summary` (text summary field used as external text features)
+- `json_summary` (text summary field used as  context features)
 
 
 
-Example scripts use text-augmented filenames such as `ETTh1_text.csv`.
 
-## Quick Start (finetune + inference)
+
+## Usage
 
 Example with ETTh1:
 
