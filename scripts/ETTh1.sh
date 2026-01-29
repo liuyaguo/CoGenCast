@@ -6,7 +6,7 @@ for pred_len in 12; do
                 --task_name finetune \
                 --is_training 1 \
                 --root_path ./datasets/ETT-small/ \
-                --data_path ETTh1_text.csv \
+                --data_path ETTh1.csv \
                 --model_id ETTh1 \
                 --model My_Model \
                 --data ETTh1 \

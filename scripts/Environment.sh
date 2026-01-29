@@ -6,7 +6,7 @@ for pred_len in 12; do
                 --task_name finetune \
                 --is_training 1 \
                 --root_path ./datasets/Environment/ \
-                --data_path Environment_text.csv \
+                --data_path Environment.csv \
                 --model_id Environment \
                 --model My_Model \
                 --data Environment \

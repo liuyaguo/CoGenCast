@@ -6,7 +6,7 @@ for pred_len in 12; do
                 --task_name finetune \
                 --is_training 1 \
                 --root_path ./datasets/Solar/ \
-                --data_path Solar_text.csv \
+                --data_path Solar.csv \
                 --model_id Solar \
                 --model My_Model \
                 --data Solar \

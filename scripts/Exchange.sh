@@ -5,7 +5,7 @@ for lr in    1e-4 ; do
         --task_name finetune \
         --is_training 1 \
         --root_path ./datasets/exchange_rate/ \
-        --data_path exchange_rate_text.csv \
+        --data_path exchange_rate.csv \
         --model_id Exchange \
         --model My_Model \
         --data Exchange \

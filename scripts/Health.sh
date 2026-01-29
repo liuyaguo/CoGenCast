@@ -6,7 +6,7 @@ for pred_len in 12; do
                 --task_name finetune \
                 --is_training 1 \
                 --root_path ./datasets/Health/ \
-                --data_path Health_text.csv \
+                --data_path Health.csv \
                 --model_id Health \
                 --model My_Model \
                 --data Health \
